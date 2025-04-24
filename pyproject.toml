@@ -1,0 +1,26 @@
+[project]
+name = "splitpatch"
+version = "1.0.0"
+authors = [
+  { name="Chao Liu", email="chaoliu719@gmail.com" },
+]
+description = "An intelligent tool for splitting large patch files into smaller file-based patches"
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[project.urls]
+Homepage = "https://github.com/chaoliu719/splitpatch"
+Issues = "https://github.com/chaoliu719/splitpatch/issues"
+
+[build-system]
+requires = ["setuptools >= 77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+exclude = ["tests", "tests.*", ".github"]
