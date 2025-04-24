@@ -1,6 +1,6 @@
 [project]
 name = "splitpatch"
-version = "1.0.0"
+version = "1.0.1"
 authors = [
   { name="Chao Liu", email="chaoliu719@gmail.com" },
 ]
