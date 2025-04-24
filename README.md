@@ -4,6 +4,7 @@
 [![Python Versions](https://img.shields.io/pypi/pyversions/splitpatch.svg)](https://pypi.org/project/splitpatch/)
 [![License](https://img.shields.io/github/license/chaoliu719/splitpatch.svg)](LICENSE)
 [![Tests](https://github.com/chaoliu719/splitpatch/actions/workflows/tests.yml/badge.svg)](https://github.com/chaoliu719/splitpatch/actions/workflows/tests.yml)
+[![codecov](https://codecov.io/gh/chaoliu719/splitpatch/branch/main/graph/badge.svg)](https://codecov.io/gh/chaoliu719/splitpatch)
 
 [English](https://github.com/chaoliu719/splitpatch?tab=readme-ov-file#splitpatch) | [简体中文](https://github.com/chaoliu719/splitpatch/blob/main/README_zh-CN.md)
 

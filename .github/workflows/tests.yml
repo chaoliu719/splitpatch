@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    environment: codecov
     strategy:
       matrix:
         python-version: ['3.9', '3.10', '3.11']
@@ -28,4 +29,11 @@ jobs:
 
     - name: Test with pytest
       run: |
-        pytest --cov=splitpatch tests/
+        pytest --cov=splitpatch tests/ --cov-report=xml
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        fail_ci_if_error: false
