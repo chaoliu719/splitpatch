@@ -14,6 +14,9 @@ classifiers = [
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
 
+[project.scripts]
+splitpatch = "splitpatch.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/chaoliu719/splitpatch"
 Issues = "https://github.com/chaoliu719/splitpatch/issues"
