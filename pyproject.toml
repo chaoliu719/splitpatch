@@ -1,18 +1,17 @@
 [project]
 name = "splitpatch"
 dynamic = ["version"]
-authors = [
-  { name="Chao Liu", email="chaoliu719@gmail.com" },
-]
 description = "An intelligent tool for splitting large patch files into smaller file-based patches"
 readme = "README.md"
 requires-python = ">=3.8"
+license = "MIT"
+authors = [
+    {name = "Chao Liu", email = "chaoliu719@gmail.com"},
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
 ]
-license = "MIT"
-license-files = ["LICEN[CS]E*"]
 
 [project.scripts]
 splitpatch = "splitpatch.cli:main"
