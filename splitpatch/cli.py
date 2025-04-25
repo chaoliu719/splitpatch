@@ -29,7 +29,7 @@ def setup_args() -> argparse.Namespace:
 
     # Base parameters
     parser.add_argument('patch_files', type=str, nargs='+', help='Input patch file paths, multiple files can be specified')
-    parser.add_argument('--out-dir', type=str, help='Output directory path')
+    parser.add_argument('--outdir', type=str, help='Output directory path')
 
     # Split parameters
     parser.add_argument('--level', type=int, default=1, help='Merge level limit (default: 1)')
@@ -45,8 +45,8 @@ def setup_args() -> argparse.Namespace:
 
     args = parser.parse_args()
     # Validate arguments
-    if not args.dry_run and not args.out_dir:
-        parser.error("--out-dir is required in non-dry-run mode")
+    if not args.dry_run and not args.outdir:
+        parser.error("--outdir is required in non-dry-run mode")
 
     # Configure logging
     setup_logging(args.log_level)
@@ -55,8 +55,8 @@ def setup_args() -> argparse.Namespace:
     # Print argument information
     logger.info("Current arguments:")
     logger.info(f"  Input files: {', '.join(args.patch_files)}")
-    if args.out_dir:
-        logger.info(f"  Output directory: {args.out_dir}")
+    if args.outdir:
+        logger.info(f"  Output directory: {args.outdir}")
     logger.info(f"  Merge level: {args.level}")
     logger.info(f"  File count threshold: {args.threshold}")
     logger.info(f"  Log level: {args.log_level}")
@@ -133,12 +133,12 @@ def split_patch(patch: Patch, level: int, threshold: int) -> List[Patch]:
     return root.to_patches()
 
 
-def output_patches(patches: List[Patch], out_dir: str, dry_run: bool) -> None:
+def output_patches(patches: List[Patch], outdir: str, dry_run: bool) -> None:
     """Output processed patches to specified directory
 
     Args:
         patches: List of patches to output
-        out_dir: Output directory path
+        outdir: Output directory path
         dry_run: If True, only print info without actually writing files
     """
     if dry_run:
@@ -148,10 +148,10 @@ def output_patches(patches: List[Patch], out_dir: str, dry_run: bool) -> None:
             logger.info(f"Patch {i:03d}_{normalized_path}.patch")
         return
 
-    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(outdir, exist_ok=True)
     for i, patch in enumerate(patches, 1):
         normalized_path = patch.path.lstrip('/').replace('/', '_')
-        output_file = os.path.join(out_dir, f"{i:03d}_{normalized_path}.patch")
+        output_file = os.path.join(outdir, f"{i:03d}_{normalized_path}.patch")
 
         try:
             patch.path = output_file
@@ -174,7 +174,7 @@ def main() -> None:
         patches = split_patch(combined_patch, args.level, args.threshold)
 
         # Output results
-        output_patches(patches, args.out_dir, args.dry_run)
+        output_patches(patches, args.outdir, args.dry_run)
 
     except Exception as e:
         logger.error(f"An error occurred during processing: {e}")
