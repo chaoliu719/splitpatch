@@ -1,6 +1,6 @@
 [project]
 name = "splitpatch"
-version = "1.0.1"
+dynamic = ["version"]
 authors = [
   { name="Chao Liu", email="chaoliu719@gmail.com" },
 ]
@@ -19,8 +19,10 @@ Homepage = "https://github.com/chaoliu719/splitpatch"
 Issues = "https://github.com/chaoliu719/splitpatch/issues"
 
 [build-system]
-requires = ["setuptools >= 77.0.3"]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 exclude = ["tests", "tests.*", ".github"]
+
+[tool.setuptools_scm]

@@ -5,11 +5,12 @@ import argparse
 import os
 import sys
 from typing import List
+from importlib.metadata import version
 
 from splitpatch.patch import Patch
 from splitpatch.tree import DirNode
 from splitpatch.merge import Merge
-from splitpatch import __version__, logger, setup_logging
+from splitpatch import logger, setup_logging
 
 
 def setup_args() -> argparse.Namespace:
@@ -40,7 +41,7 @@ def setup_args() -> argparse.Namespace:
     parser.add_argument('--log-level', type=str, default='WARNING',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Logging level (default: WARNING)')
-    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
+    parser.add_argument('--version', action='version', version=f'%(prog)s {version("splitpatch")}')
 
     args = parser.parse_args()
     # Validate arguments

@@ -3,8 +3,6 @@
 
 import logging
 
-__version__ = "0.1.0"
-
 logger = logging.getLogger(__name__)
 
 if not logger.handlers:
@@ -25,4 +23,4 @@ def setup_logging(log_level: str = 'WARNING') -> None:
 
     logger.setLevel(numeric_level)
 
-__all__ = ['__version__', 'logger', 'setup_logging']
+__all__ = ['logger', 'setup_logging']
