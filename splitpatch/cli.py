@@ -38,9 +38,9 @@ def setup_args() -> argparse.Namespace:
 
     # Other parameters
     parser.add_argument('--dry-run', action='store_true', help='Only show operations to be performed, do not execute')
-    parser.add_argument('--log-level', type=str, default='WARNING',
+    parser.add_argument('--log-level', type=str, default='INFO',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                        help='Logging level (default: WARNING)')
+                        help='Logging level (default: INFO)')
     parser.add_argument('--version', action='version', version=f'%(prog)s {version("splitpatch")}')
 
     args = parser.parse_args()

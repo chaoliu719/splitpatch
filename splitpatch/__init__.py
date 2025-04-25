@@ -11,7 +11,7 @@ if not logger.handlers:
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
-def setup_logging(log_level: str = 'WARNING') -> None:
+def setup_logging(log_level: str = 'INFO') -> None:
     """Configure package-level logging settings
 
     Args:
