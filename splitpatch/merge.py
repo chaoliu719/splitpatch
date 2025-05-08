@@ -5,6 +5,7 @@ from typing import List
 
 from splitpatch.tree import DirNode
 from splitpatch import logger
+from splitpatch.profiling import profile_method
 
 class Merge:
     """Merge strategy class implementing three merge strategies"""
@@ -22,6 +23,7 @@ class Merge:
         self.level = level
         self.threshold = threshold
 
+    @profile_method
     def merge(self):
         """
         Execute merge strategy
@@ -44,6 +46,7 @@ class Merge:
         # Step 3: Level and size based merge
         self._merge_by_level_and_size()
 
+    @profile_method
     def _is_module_boundary(self, node: DirNode) -> bool:
         """
         Determine if node is a module boundary
@@ -72,6 +75,7 @@ class Merge:
 
         return is_boundary
 
+    @profile_method
     def _find_module_boundaries(self) -> List[DirNode]:
         """
         Find all module boundary nodes
@@ -93,6 +97,7 @@ class Merge:
             logger.debug(f"Module boundary node: {node.path}")
         return module_nodes
 
+    @profile_method
     def _flatten_nodes(self, node: DirNode):
         """
         All module node's children are merged into the module node
@@ -116,6 +121,7 @@ class Merge:
         logger.debug(f"Flatten complete, current file tree: \n{self.tree}")
         logger.debug(f"Module {node.path} processing complete, now contains {node.file_changes_count} files")
 
+    @profile_method
     def _shorten_paths(self):
         """
         Shorten paths by handling nodes with only one subdirectory and no changes
@@ -148,6 +154,7 @@ class Merge:
         process_node(self.tree)
         logger.debug("Path shortening operation complete")
 
+    @profile_method
     def _merge_by_level_and_size(self):
         """
         Merge modules based on level and size
@@ -183,7 +190,8 @@ class Merge:
         process_node(self.tree)
         logger.debug("Merge complete")
 
-    def _merge_to_parent(self, node: DirNode, parent: DirNode):
+    @profile_method
+    def _merge_to_parent(self, node: DirNode, parent: DirNode) -> None:
         """
         Merge node into parent node
 
@@ -220,7 +228,8 @@ class Merge:
         self._verify_tree_integrity(parent)
         logger.debug(f"Completed merge of node {node.path} into parent {parent.path}")
 
-    def _verify_tree_integrity(self, node: DirNode):
+    @profile_method
+    def _verify_tree_integrity(self, node: DirNode) -> None:
         """
         Verify tree integrity, ensure all node parent-child relationships are correct
 

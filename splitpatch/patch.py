@@ -6,6 +6,7 @@ import re
 from typing import Dict
 
 from splitpatch import logger
+from splitpatch.profiling import profile_method
 
 class Patch(Dict[str, str]):
     """Patch class, inherits from Dict
@@ -26,6 +27,7 @@ class Patch(Dict[str, str]):
         super().__init__()
         self.path = path
 
+    @profile_method
     def try_parse(self) -> bool:
         """Try to parse patch file and store results in dictionary
 
@@ -104,6 +106,7 @@ class Patch(Dict[str, str]):
             logger.error(f"Error reading patch file: {self.path}")
             return False
 
+    @profile_method
     def write_patch(self) -> None:
         """Write patch to file"""
         # Get output directory path

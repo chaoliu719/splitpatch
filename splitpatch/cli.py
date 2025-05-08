@@ -4,6 +4,8 @@
 import argparse
 import os
 import sys
+import cProfile
+import pstats
 from typing import List
 from importlib.metadata import version
 
@@ -11,6 +13,7 @@ from splitpatch.patch import Patch
 from splitpatch.tree import DirNode
 from splitpatch.merge import Merge
 from splitpatch import logger, setup_logging
+from splitpatch.profiling import profile_method, ENABLE_PROFILING
 
 
 def setup_args() -> argparse.Namespace:
@@ -27,21 +30,29 @@ def setup_args() -> argparse.Namespace:
     """
     parser = argparse.ArgumentParser(description='Split patch tool')
 
+    main_group = parser.add_argument_group('main arguments')
+
     # Base parameters
-    parser.add_argument('patch_files', type=str, nargs='+', help='Input patch file paths, multiple files can be specified')
-    parser.add_argument('--outdir', type=str, help='Output directory path')
+    main_group.add_argument('patch_files', type=str, nargs='+', help='Input patch file paths, multiple files can be specified')
+    main_group.add_argument('--outdir', type=str, help='Output directory path')
 
     # Split parameters
-    parser.add_argument('--level', type=int, default=1, help='Merge level limit (default: 1)')
-    parser.add_argument('--threshold', type=int, default=10,
+    main_group.add_argument('--level', type=int, default=1, help='Merge level limit (default: 1)')
+    main_group.add_argument('--threshold', type=int, default=10,
                         help='Module change file count threshold, merge to parent directory if below this value (default: 10)')
 
     # Other parameters
-    parser.add_argument('--dry-run', action='store_true', help='Only show operations to be performed, do not execute')
-    parser.add_argument('--log-level', type=str, default='INFO',
+    main_group.add_argument('--dry-run', action='store_true', help='Only show operations to be performed, do not execute')
+    main_group.add_argument('--log-level', type=str, default='INFO',
                         choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Logging level (default: INFO)')
-    parser.add_argument('--version', action='version', version=f'%(prog)s {version("splitpatch")}')
+    main_group.add_argument('--version', action='version', version=f'%(prog)s {version("splitpatch")}')
+
+    # Developer arguments group (hidden from help)
+    dev_group = parser.add_argument_group('developer options')
+    dev_group.add_argument('--profile', action='store_true', help=argparse.SUPPRESS)
+    dev_group.add_argument('--profile-output', type=str, default='splitpatch.prof',
+                        help=argparse.SUPPRESS)
 
     args = parser.parse_args()
     # Validate arguments
@@ -61,10 +72,14 @@ def setup_args() -> argparse.Namespace:
     logger.info(f"  File count threshold: {args.threshold}")
     logger.info(f"  Log level: {args.log_level}")
     logger.info(f"  Dry run: {'yes' if args.dry_run else 'no'}")
+    if args.profile:
+        logger.info(f"  Performance profiling: enabled")
+        logger.info(f"  Profile output: {args.profile_output}")
 
     return args
 
 
+@profile_method
 def parse_patches(patch_files: List[str]) -> Patch:
     """Parse and validate all patch files
 
@@ -104,6 +119,7 @@ def parse_patches(patch_files: List[str]) -> Patch:
     logger.debug(f"All patch files parsed: {combined_patch}")
     return combined_patch
 
+@profile_method
 def split_patch(patch: Patch, level: int, threshold: int) -> List[Patch]:
     """Split and merge patch data based on level and threshold parameters
 
@@ -129,7 +145,7 @@ def split_patch(patch: Patch, level: int, threshold: int) -> List[Patch]:
     # Convert merged tree to patch list
     return root.to_patches()
 
-
+@profile_method
 def output_patches(patches: List[Patch], outdir: str, dry_run: bool) -> None:
     """Output processed patches to specified directory
 
@@ -163,6 +179,13 @@ def main() -> None:
         # Parse command line arguments
         args = setup_args()
 
+        # Set up performance profiling mode
+        if args.profile:
+            global ENABLE_PROFILING
+            ENABLE_PROFILING = True
+            profiler = cProfile.Profile()
+            profiler.enable()
+
         # Parse patch files
         combined_patch = parse_patches(args.patch_files)
 
@@ -171,6 +194,15 @@ def main() -> None:
 
         # Output results
         output_patches(patches, args.outdir, args.dry_run)
+
+        # Only output results when performance profiling is enabled
+        if args.profile:
+            profiler.disable()
+            stats = pstats.Stats(profiler)
+            stats.sort_stats('cumulative')
+            stats.print_stats(30)
+            stats.dump_stats(args.profile_output)
+            logger.info(f"Performance profile saved to: {args.profile_output}")
 
     except Exception as e:
         logger.error(f"An error occurred during processing: {e}")

@@ -5,6 +5,7 @@ from typing import List, Optional
 
 from splitpatch.patch import Patch
 from splitpatch import logger
+from splitpatch.profiling import profile_method
 
 class FileDiff:
     """File node that stores file path and change content"""
@@ -51,6 +52,7 @@ class DirNode:
         self._path = name if not parent else f"{parent.path}/{name}" if parent.path != "/" else f"/{name}"
         logger.debug(f"Created node: {name} (path: {self._path})")
 
+    @profile_method
     def _add_file(self, file_diff: FileDiff) -> FileDiff:
         """
         Internal method: Add file to current directory node
@@ -65,6 +67,7 @@ class DirNode:
         logger.debug(f"Node {self.path} added file: {file_diff.path}")
         return file_diff
 
+    @profile_method
     def add_file(self, file_diff: FileDiff) -> None:
         """
         Add file to tree, automatically creating necessary directory structure.
@@ -168,6 +171,7 @@ class DirNode:
 
         return _tree_str(self)
 
+    @profile_method
     def to_patches(self) -> List[Patch]:
         """
         Convert directory tree to patch list
@@ -190,6 +194,7 @@ class DirNode:
         return patches
 
     @classmethod
+    @profile_method
     def from_patch(cls, patch: Patch) -> 'DirNode':
         """Create directory tree from patch file
 

@@ -12,3 +12,6 @@ wheels/
 
 # Test files
 test_patch/
+
+# Performance profiling results
+*.prof
