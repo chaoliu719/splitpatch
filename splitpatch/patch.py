@@ -31,11 +31,15 @@ class Patch(Dict[str, List[str]]):
         try:
             # Check if file exists and is readable
             if not os.path.isfile(self.path):
+                logger.error(f"Patch file does not exist: {self.path}")
                 return False
 
             # Check file size
             if os.path.getsize(self.path) == 0:
+                logger.error(f"Patch file is empty: {self.path}")
                 return False
+
+
 
             # Read first few lines to check format
             with open(self.path, 'r', encoding='utf-8') as f:
@@ -43,6 +47,7 @@ class Patch(Dict[str, List[str]]):
 
                 # Check if file is empty
                 if not lines:
+                    logger.error(f"Patch file is empty: {self.path}")
                     return False
 
                 # Check common patch file identifiers
@@ -50,13 +55,16 @@ class Patch(Dict[str, List[str]]):
                 if any(line.startswith('diff --git') for line in lines):
                     return True
 
-                # 2. git commit format
-                if any(line.startswith('commit ') for line in lines):
+                # 2. standard diff format (diff [options] file1 file2)
+                if any(re.match(r'^diff\s+(?:--?[-\w]+\s+)*\S+\s+\S+', line) for line in lines):
                     return True
+
+                logger.debug(f"First 10 lines of patch file: {lines}")
 
                 return False
 
         except (IOError, UnicodeDecodeError):
+            logger.error(f"Error reading patch file: {self.path}")
             return False
 
     def parse_patch(self) -> None:
@@ -70,16 +78,24 @@ class Patch(Dict[str, List[str]]):
                 line = line.rstrip()
 
                 # Check if it's a file header
-                if line.startswith('diff --git'):
+                if line.startswith('diff '):
                     # Save previous file's diff
                     if current_file and current_diff:
                         self[current_file] = current_diff
                         current_diff = []
 
-                    # Extract new filename
-                    match = re.search(r' b/(.+)$', line)
-                    if match:
-                        current_file = match.group(1)
+                    # Extract filename based on diff format
+                    if line.startswith('diff --git'):
+                        match = re.search(r' b/(.+)$', line)
+                        if match:
+                            current_file = match.group(1)
+                    else:
+                        # For standard diff format, the second file is the new version
+                        match = re.search(r'^diff\s+(?:--?[-\w]+\s+)*\S+\s+(\S+)$', line)
+                        if match:
+                            current_file = match.group(1)
+
+                    if current_file:
                         logger.debug(f"Found file: {current_file}")
 
                 # Collect diff content
