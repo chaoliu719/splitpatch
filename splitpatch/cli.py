@@ -87,7 +87,6 @@ def parse_patches(patch_files: List[str]) -> Patch:
             invalid_files.append(patch_file)
             continue
 
-        logger.debug(f"Parsing patch file: {patch_file}")
         patch.parse_patch()
 
         # Merge into combined data
@@ -144,8 +143,7 @@ def output_patches(patches: List[Patch], outdir: str, dry_run: bool) -> None:
     if dry_run:
         logger.info("Dry run mode - files will not be written")
         for i, patch in enumerate(patches, 1):
-            normalized_path = patch.path.lstrip('/').replace('/', '_')
-            logger.info(f"Patch {i:03d}_{normalized_path}.patch")
+            logger.info(f"Patch {i:03d} contains {len(patch)} files, patch path: {patch.path}")
         return
 
     os.makedirs(outdir, exist_ok=True)
@@ -178,6 +176,9 @@ def main() -> None:
 
     except Exception as e:
         logger.error(f"An error occurred during processing: {e}")
+        import traceback
+        logger.debug(traceback.format_exc())
+
         sys.exit(1)
 
 
