@@ -3,16 +3,20 @@
 
 import os
 import re
-from typing import Dict, List
+from typing import Dict
 
 from splitpatch import logger
 
-class Patch(Dict[str, List[str]]):
+class Patch(Dict[str, str]):
     """Patch class, inherits from Dict
 
     key: file path
-    value: list of file modifications
+    value: file modifications
     """
+    # Define regex pattern as class attribute
+    # Capture both relative paths and verify they are identical
+    _diff_pattern = re.compile(r'^diff\s+(?:--?[-\w]+\s+)*[^/\s]+/([^/\s].*?)\s+[^/\s]+/(\1)$', re.MULTILINE)
+
     def __init__(self, path: str):
         """Initialize Patch
 
@@ -22,11 +26,11 @@ class Patch(Dict[str, List[str]]):
         super().__init__()
         self.path = path
 
-    def is_valid(self) -> bool:
-        """Check if patch file is valid
+    def try_parse(self) -> bool:
+        """Try to parse patch file and store results in dictionary
 
         Returns:
-            bool: whether the file is valid
+            bool: whether the file is valid and successfully parsed
         """
         try:
             # Check if file exists and is readable
@@ -39,72 +43,66 @@ class Patch(Dict[str, List[str]]):
                 logger.error(f"Patch file is empty: {self.path}")
                 return False
 
+            # Set buffer size to 1MB for chunked reading of large files
+            buffer_size = 1024 * 1024  # 1MB
+            current_file = None
+            current_content = []
+            found_diff = False
 
+            logger.debug(f"Starting to parse patch file: {self.path}")
+            with open(self.path, 'r') as f:
+                while True:
+                    # Read file content in chunks
+                    chunk = f.read(buffer_size)
+                    if not chunk:
+                        # Process content of the last file
+                        if current_file and current_content:
+                            self[current_file] = ''.join(current_content)
+                            logger.debug(f"Completed parsing last file: {current_file}")
+                        break
 
-            # Read first few lines to check format
-            with open(self.path, 'r', encoding='utf-8') as f:
-                lines = [line.strip() for line in f.readlines()[:10]]  # Read first 10 lines
+                    # Check if first chunk contains valid diff format
+                    if not found_diff:
+                        if self._diff_pattern.search(chunk):
+                            found_diff = True
+                            logger.debug("Found valid diff format")
+                        else:
+                            logger.debug(f"Invalid patch file format: {self.path}")
+                            return False
 
-                # Check if file is empty
-                if not lines:
-                    logger.error(f"Patch file is empty: {self.path}")
-                    return False
+                    # Find all diff markers in current chunk
+                    matches = list(self._diff_pattern.finditer(chunk))
+                    logger.debug(f"Found {len(matches)} diff markers in current chunk")
 
-                # Check common patch file identifiers
-                # 1. git diff format
-                if any(line.startswith('diff --git') for line in lines):
-                    return True
+                    if matches:
+                        for i, match in enumerate(matches):
+                            if current_file:
+                                # Process content of previous file
+                                start_pos = 0 if i == 0 else matches[i-1].start()
+                                content = chunk[start_pos:match.start()]
+                                if current_content:
+                                    content = ''.join(current_content) + content
+                                self[current_file] = content
+                                logger.debug(f"Completed parsing file: {current_file}")
+                                current_content = []
 
-                # 2. standard diff format (diff [options] file1 file2)
-                if any(re.match(r'^diff\s+(?:--?[-\w]+\s+)*\S+\s+\S+', line) for line in lines):
-                    return True
+                            # Start processing new file
+                            current_file = match.group(1)
+                            logger.debug(f"Found file: {current_file}")
 
-                logger.debug(f"First 10 lines of patch file: {lines}")
+                        # Save content after last diff marker
+                        current_content = [chunk[matches[-1].start():]]
+                    else:
+                        # If no new diff markers found, append current chunk to current file content
+                        if current_file:
+                            current_content.append(chunk)
 
-                return False
+            logger.debug(f"Patch file parsing completed, parsed {len(self)} files")
+            return True
 
         except (IOError, UnicodeDecodeError):
             logger.error(f"Error reading patch file: {self.path}")
             return False
-
-    def parse_patch(self) -> None:
-        """Parse patch file and store results in dictionary"""
-        logger.debug(f"Parsing patch file: {self.path}")
-        current_file = None
-        current_diff: List[str] = []
-
-        with open(self.path, 'r') as f:
-            for line in f:
-                line = line.rstrip()
-
-                # Check if it's a file header
-                if line.startswith('diff '):
-                    # Save previous file's diff
-                    if current_file and current_diff:
-                        self[current_file] = current_diff
-                        current_diff = []
-
-                    # Extract filename based on diff format
-                    if line.startswith('diff --git'):
-                        match = re.search(r' b/(.+)$', line)
-                        if match:
-                            current_file = match.group(1)
-                    else:
-                        # For standard diff format, the second file is the new version
-                        match = re.search(r'^diff\s+(?:--?[-\w]+\s+)*\S+\s+(\S+)$', line)
-                        if match:
-                            current_file = match.group(1)
-
-                    if current_file:
-                        logger.debug(f"Found file: {current_file}")
-
-                # Collect diff content
-                if current_file:
-                    current_diff.append(line)
-
-        # Save last file's diff
-        if current_file and current_diff:
-            self[current_file] = current_diff
 
     def write_patch(self) -> None:
         """Write patch to file"""
@@ -114,13 +112,10 @@ class Patch(Dict[str, List[str]]):
             os.makedirs(output_dir, exist_ok=True)
 
         with open(self.path, 'w') as f:
-            patch_lines = []
-
             # Sort by file path
             for file_path in sorted(self.keys()):
-                patch_lines.extend(self[file_path])
-
-            f.write("\n".join(patch_lines))
+                f.write(self[file_path])
+                f.write("\n")
 
     def __str__(self) -> str:
         """String representation"""

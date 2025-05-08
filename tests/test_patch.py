@@ -45,30 +45,30 @@ index 1234567..89abcdef 100644
         """Test patch file validity check"""
         # Test valid patch file
         patch = Patch(self.diff_file)
-        self.assertTrue(patch.is_valid())
+        self.assertTrue(patch.try_parse())
 
         # Test non-existent file
         non_existent = Patch(os.path.join(self.temp_dir, 'non_existent.diff'))
-        self.assertFalse(non_existent.is_valid())
+        self.assertFalse(non_existent.try_parse())
 
         # Test empty file
         empty_file = os.path.join(self.temp_dir, 'empty.diff')
         with open(empty_file, 'w') as f:
             pass
         empty_patch = Patch(empty_file)
-        self.assertFalse(empty_patch.is_valid())
+        self.assertFalse(empty_patch.try_parse())
 
         # Test invalid format file
         invalid_file = os.path.join(self.temp_dir, 'invalid.diff')
         with open(invalid_file, 'w') as f:
             f.write('This is not a valid patch file')
         invalid_patch = Patch(invalid_file)
-        self.assertFalse(invalid_patch.is_valid())
+        self.assertFalse(invalid_patch.try_parse())
 
     def test_parse_patch(self):
         """Test patch file parsing functionality"""
         patch = Patch(self.diff_file)
-        patch.parse_patch()
+        patch.try_parse()
 
         # Verify results
         self.assertEqual(len(patch), 2)  # Should have 2 files
@@ -76,13 +76,13 @@ index 1234567..89abcdef 100644
         self.assertTrue('dir1/file2.txt' in patch)
 
         # Verify diff content
-        self.assertTrue(any('test file 1 updated' in line for line in patch['file1.txt']))
-        self.assertTrue(any('test file 2 updated' in line for line in patch['dir1/file2.txt']))
+        self.assertTrue('test file 1 updated' in patch['file1.txt'])
+        self.assertTrue('test file 2 updated' in patch['dir1/file2.txt'])
 
     def test_write_patch(self):
         """Test patch file writing functionality"""
         patch = Patch(self.diff_file)
-        patch.parse_patch()
+        patch.try_parse()
 
         # Write to new file
         output_file = os.path.join(self.output_dir, 'output.diff')
@@ -103,10 +103,57 @@ index 1234567..89abcdef 100644
     def test_str_representation(self):
         """Test string representation"""
         patch = Patch(self.diff_file)
-        patch.parse_patch()
+        patch.try_parse()
         str_repr = str(patch)
         self.assertIn(self.diff_file, str_repr)
         self.assertIn('2 files', str_repr)
+
+    def test_diff_pattern(self):
+        """Test the diff pattern regex"""
+        # Use the regex pattern from Patch class
+        patch = Patch(self.diff_file)
+        diff_pattern = patch._diff_pattern  # Assuming pattern is a class attribute
+
+        # Test cases
+        test_cases = [
+            # Git style diffs (only filename)
+            ('diff --git a/file.txt b/file.txt', 'file.txt'),
+            ('diff --git --no-index a/file.txt b/file.txt', 'file.txt'),
+            ('diff --git a/bsp/bootloader/lk/app/sprdboot/boot_parse.c b/bsp/bootloader/lk/app/sprdboot/boot_parse.c', 'bsp/bootloader/lk/app/sprdboot/boot_parse.c'),
+
+            # Regular diffs (keep full relative path)
+            ('diff -ruN old/path/to/file.c new/path/to/file.c', 'path/to/file.c'),
+            ('diff --color -ruN kernel-rk/android/abi_gki_aarch64_hikey960 linux-5.10/android/abi_gki_aarch64_hikey960', 'android/abi_gki_aarch64_hikey960'),
+            ('diff --color -u kernel/file.h linux/file.h', 'file.h'),
+            ('diff -r original/src/main.cpp modified/src/main.cpp', 'src/main.cpp'),
+            ('diff -u a/path/to/file.txt b/path/to/file.txt', 'path/to/file.txt'),
+
+            # Invalid diff lines
+            ('not a diff line', None),
+            ('diff', None),
+            ('diff a/file.txt', None),
+            ('diff --git', None),
+            ('diff --color -ruN', None),
+            ('diff --color -ruN file1', None),
+            # Invalid cases where paths don't match
+            ('diff -u a/path/to/file1.txt b/path/to/file2.txt', None),
+            ('diff -ruN old/path/to/file.c new/different/path/file.c', None),
+        ]
+
+        for test_input, expected_file in test_cases:
+            match = diff_pattern.search(test_input)
+            if expected_file is None:
+                self.assertIsNone(match, f"Pattern should not match: {test_input}")
+            else:
+                self.assertIsNotNone(match, f"Pattern should match: {test_input}")
+                # Get both captured paths
+                path1, path2 = match.groups()
+                # Verify both paths are identical
+                self.assertEqual(path1, path2,
+                               f"Paths should be identical, got {path1} and {path2} for input: {test_input}")
+                # Verify the path matches expected
+                self.assertEqual(path1, expected_file,
+                               f"Expected file path {expected_file}, got {path1} for input: {test_input}")
 
 if __name__ == "__main__":
     unittest.main()

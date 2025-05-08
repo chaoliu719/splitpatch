@@ -94,7 +94,7 @@ diff --git a/dir1/file2.py b/dir1/file2.py
     def test_split_patch(self):
         """Test patch splitting functionality"""
         patch = Patch(self.sample_patch_file)
-        patch.parse_patch()
+        self.assertTrue(patch.try_parse())
 
         # Test splitting with default parameters
         patches = split_patch(patch, level=1, threshold=10)

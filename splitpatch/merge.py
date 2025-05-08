@@ -25,9 +25,6 @@ class Merge:
     def merge(self):
         """
         Execute merge strategy
-
-        Returns:
-            List[str]: List of merged modules, each element is a module's patch content
         """
         logger.debug("Starting merge strategy")
         logger.debug(f"Initial file tree for merge strategy: \n{self.tree}")
@@ -157,9 +154,6 @@ class Merge:
 
         Args:
             nodes: List of nodes to merge
-
-        Returns:
-            List[DirNode]: List of merged nodes
         """
         logger.debug("Starting level and size based merge")
 
@@ -189,7 +183,7 @@ class Merge:
         process_node(self.tree)
         logger.debug("Merge complete")
 
-    def _merge_to_parent(self, node: DirNode, parent: DirNode) -> None:
+    def _merge_to_parent(self, node: DirNode, parent: DirNode):
         """
         Merge node into parent node
 
@@ -226,7 +220,7 @@ class Merge:
         self._verify_tree_integrity(parent)
         logger.debug(f"Completed merge of node {node.path} into parent {parent.path}")
 
-    def _verify_tree_integrity(self, node: DirNode) -> None:
+    def _verify_tree_integrity(self, node: DirNode):
         """
         Verify tree integrity, ensure all node parent-child relationships are correct
 

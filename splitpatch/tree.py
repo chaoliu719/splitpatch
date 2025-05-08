@@ -9,7 +9,7 @@ from splitpatch import logger
 class FileDiff:
     """File node that stores file path and change content"""
 
-    def __init__(self, path: str, changes: List[str]):
+    def __init__(self, path: str, changes: str):
         """
         Initialize file node
 
@@ -21,7 +21,7 @@ class FileDiff:
         self.changes = changes
 
     @classmethod
-    def from_dict(cls, path: str, changes: List[str]) -> 'FileDiff':
+    def from_dict(cls, path: str, changes: str) -> 'FileDiff':
         """Create FileDiff object from dictionary data
 
         Args:

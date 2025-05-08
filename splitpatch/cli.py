@@ -83,11 +83,9 @@ def parse_patches(patch_files: List[str]) -> Patch:
 
     for patch_file in patch_files:
         patch = Patch(patch_file)
-        if not patch.is_valid():
+        if not patch.try_parse():
             invalid_files.append(patch_file)
             continue
-
-        patch.parse_patch()
 
         # Merge into combined data
         for file_path, changes in patch.items():
