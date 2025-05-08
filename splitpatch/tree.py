@@ -68,7 +68,7 @@ class DirNode:
         return file_diff
 
     @profile_method
-    def add_file(self, file_diff: FileDiff) -> None:
+    def add_file(self, file_diff: FileDiff):
         """
         Add file to tree, automatically creating necessary directory structure.
         Note: This method can only be called on the root node.
@@ -169,7 +169,11 @@ class DirNode:
 
             return "\n".join(result)
 
-        return _tree_str(self)
+        if logger.is_debug_mode():
+            return _tree_str(self)
+
+        # Return simple path and file count information in non-debug mode
+        return f"{self.path} ({len(self.file_changes)} files)"
 
     @profile_method
     def to_patches(self) -> List[Patch]:
@@ -181,7 +185,7 @@ class DirNode:
         """
         patches = []
 
-        def _collect_patches(node: DirNode) -> None:
+        def _collect_patches(node: DirNode):
             if node.file_changes:  # Only process nodes with files
                 patch = Patch(f"{node.path}")
                 for file_diff in node.file_changes:

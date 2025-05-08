@@ -85,7 +85,7 @@ class Merge:
         """
         module_nodes = []
 
-        def traverse(node: DirNode) -> None:
+        def traverse(node: DirNode):
             if self._is_module_boundary(node):
                 module_nodes.append(node)
             for child in node.dir_nodes:
@@ -108,7 +108,7 @@ class Merge:
         logger.debug("Starting flatten operation")
         logger.debug(f"Processing flatten for node {node.path}")
 
-        def process_node(current: DirNode) -> None:
+        def process_node(current: DirNode):
             """Recursively process nodes"""
             # Process all children first (bottom-up)
             for child in current.dir_nodes[:]:
@@ -128,7 +128,7 @@ class Merge:
         """
         logger.debug("Starting path shortening operation")
 
-        def process_node(node: DirNode) -> None:
+        def process_node(node: DirNode):
             # Process all subdirectories first, bottom-up
             for child in node.dir_nodes[:]:
                 process_node(child)
@@ -164,7 +164,7 @@ class Merge:
         """
         logger.debug("Starting level and size based merge")
 
-        def process_node(node: DirNode) -> None:
+        def process_node(node: DirNode):
             """Recursively process nodes"""
             # Process all children first (bottom-up)
             for child in node.dir_nodes[:]:
@@ -191,7 +191,7 @@ class Merge:
         logger.debug("Merge complete")
 
     @profile_method
-    def _merge_to_parent(self, node: DirNode, parent: DirNode) -> None:
+    def _merge_to_parent(self, node: DirNode, parent: DirNode):
         """
         Merge node into parent node
 
@@ -229,7 +229,7 @@ class Merge:
         logger.debug(f"Completed merge of node {node.path} into parent {parent.path}")
 
     @profile_method
-    def _verify_tree_integrity(self, node: DirNode) -> None:
+    def _verify_tree_integrity(self, node: DirNode):
         """
         Verify tree integrity, ensure all node parent-child relationships are correct
 
@@ -239,6 +239,9 @@ class Merge:
         Raises:
             ValueError: If tree integrity is violated
         """
+        if not logger.is_debug_mode():
+            return
+
         # Verify parent references of all subdirectories
         for child in node.dir_nodes:
             if child.parent != node:

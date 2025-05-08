@@ -42,13 +42,13 @@ diff --git a/dir1/file2.py b/dir1/file2.py
             os.remove(self.sample_patch_file)
         os.rmdir(self.temp_dir)
 
-    @patch('sys.argv', ['splitpatch', 'test.patch', '--outdir', 'output', '--log-level', 'DEBUG'])
+    @patch('sys.argv', ['splitpatch', 'test.patch', '--outdir', 'output', '--debug'])
     def test_setup_args(self):
         """Test command line argument parsing"""
         args = setup_args()
         self.assertEqual(args.patch_files, ['test.patch'])
         self.assertEqual(args.outdir, 'output')
-        self.assertEqual(args.log_level, 'DEBUG')
+        self.assertTrue(args.debug)
         self.assertEqual(args.level, 1)  # Default value
         self.assertEqual(args.threshold, 10)  # Default value
         self.assertFalse(args.dry_run)

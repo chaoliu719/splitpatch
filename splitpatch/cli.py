@@ -43,13 +43,11 @@ def setup_args() -> argparse.Namespace:
 
     # Other parameters
     main_group.add_argument('--dry-run', action='store_true', help='Only show operations to be performed, do not execute')
-    main_group.add_argument('--log-level', type=str, default='INFO',
-                        choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
-                        help='Logging level (default: INFO)')
     main_group.add_argument('--version', action='version', version=f'%(prog)s {version("splitpatch")}')
 
     # Developer arguments group (hidden from help)
     dev_group = parser.add_argument_group('developer options')
+    dev_group.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
     dev_group.add_argument('--profile', action='store_true', help=argparse.SUPPRESS)
     dev_group.add_argument('--profile-output', type=str, default='splitpatch.prof',
                         help=argparse.SUPPRESS)
@@ -60,7 +58,7 @@ def setup_args() -> argparse.Namespace:
         parser.error("--outdir is required in non-dry-run mode")
 
     # Configure logging
-    setup_logging(args.log_level)
+    setup_logging(args.debug)
     logger.debug("Starting to process patch files")
 
     # Print argument information
@@ -70,8 +68,9 @@ def setup_args() -> argparse.Namespace:
         logger.info(f"  Output directory: {args.outdir}")
     logger.info(f"  Merge level: {args.level}")
     logger.info(f"  File count threshold: {args.threshold}")
-    logger.info(f"  Log level: {args.log_level}")
     logger.info(f"  Dry run: {'yes' if args.dry_run else 'no'}")
+    if args.debug:
+        logger.info(f"  Debug mode: enabled")
     if args.profile:
         logger.info(f"  Performance profiling: enabled")
         logger.info(f"  Profile output: {args.profile_output}")
@@ -146,7 +145,7 @@ def split_patch(patch: Patch, level: int, threshold: int) -> List[Patch]:
     return root.to_patches()
 
 @profile_method
-def output_patches(patches: List[Patch], outdir: str, dry_run: bool) -> None:
+def output_patches(patches: List[Patch], outdir: str, dry_run: bool):
     """Output processed patches to specified directory
 
     Args:
@@ -174,7 +173,7 @@ def output_patches(patches: List[Patch], outdir: str, dry_run: bool) -> None:
             sys.exit(1)
 
 
-def main() -> None:
+def main():
     try:
         # Parse command line arguments
         args = setup_args()

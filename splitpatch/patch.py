@@ -107,7 +107,7 @@ class Patch(Dict[str, str]):
             return False
 
     @profile_method
-    def write_patch(self) -> None:
+    def write_patch(self):
         """Write patch to file"""
         # Get output directory path
         output_dir = os.path.dirname(self.path)
