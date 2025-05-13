@@ -10,7 +10,6 @@ if not logger.handlers:
     formatter = logging.Formatter('[%(levelname)s] %(message)s')
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-
 def setup_logging(log_level: bool):
     """Configure package-level logging settings
 
@@ -20,15 +19,8 @@ def setup_logging(log_level: bool):
     numeric_level = logging.DEBUG if log_level else logging.INFO
     logger.setLevel(numeric_level)
 
-    # Add is_debug_mode method to logger
-    def is_debug_mode() -> bool:
-        """Check if current logging level is DEBUG
-
-        Returns:
-            bool: True if logging level is DEBUG, False otherwise
-        """
-        return logger.getEffectiveLevel() <= logging.DEBUG
-
-    logger.is_debug_mode = is_debug_mode
+    # Add debug mode methods to logger
+    logger.set_debug_mode = lambda enabled: logger.setLevel(logging.DEBUG if enabled else logging.INFO)
+    logger.is_debug_mode = lambda: logger.getEffectiveLevel() <= logging.DEBUG
 
 __all__ = ['logger', 'setup_logging']
