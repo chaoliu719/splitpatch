@@ -59,7 +59,7 @@ class Merge:
         """
         # Module boundary conditions: current directory depth >= level and has file changes
         # and parent directory has no changes (if parent exists)
-        if node.depth <= self.level:
+        if node.depth < self.level:
             logger.debug(f"Node {node.path} depth {node.depth} less than level {self.level}, not a boundary")
             return False
 
@@ -134,7 +134,7 @@ class Merge:
                 process_node(child)
 
             # Skip if node depth is less than level
-            if node.depth <= self.level:
+            if node.depth < self.level:
                 logger.debug(f"Node {node.path} depth {node.depth} less than level {self.level}, skipping")
                 return
             else:
@@ -171,7 +171,7 @@ class Merge:
                 process_node(child)
 
             # Skip if node depth is less than level
-            if node.depth <= self.level:
+            if node.depth < self.level:
                 logger.debug(f"Node {node.path} depth {node.depth} less than level {self.level}, skipping")
                 return
             else:

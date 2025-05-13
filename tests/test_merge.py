@@ -36,7 +36,7 @@ class TestMerge(unittest.TestCase):
         self.dir5_sub_sub = next(node for node in self.dir5_sub.dir_nodes if node.name == "dir5_sub_sub")
 
         # Create MergeStrategy instance
-        self.merge_strategy = Merge(self.root, level=0, threshold=2)
+        self.merge_strategy = Merge(self.root, level=1, threshold=2)
 
     def test_merge(self):
         """Test merge strategy"""

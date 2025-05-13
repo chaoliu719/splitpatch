@@ -96,8 +96,8 @@ diff --git a/dir1/file2.py b/dir1/file2.py
         patch = Patch(self.sample_patch_file)
         self.assertTrue(patch.try_parse())
 
-        # Test splitting with default parameters
-        patches = split_patch(patch, level=1, threshold=10)
+        # Test splitting with specific parameters
+        patches = split_patch(patch, level=1, threshold=1)
         self.assertIsInstance(patches, list)
         # Based on sample patch content, should split into two patches
         # One for root directory's file1.py, one for dir1/file2.py
