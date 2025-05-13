@@ -4,6 +4,7 @@
 import unittest
 from splitpatch.tree import DirNode, FileDiff
 from splitpatch.merge import Merge
+from splitpatch import logger
 
 class TestMerge(unittest.TestCase):
     def setUp(self):
@@ -117,6 +118,29 @@ class TestMerge(unittest.TestCase):
             for file_node in node.file_changes:
                 actual_files.add(file_node.path)
         self.assertEqual(actual_files, expected_files)
+
+    def test_verify_tree_integrity(self):
+        """Test tree integrity verification"""
+        # Enable debug mode
+        original_debug = logger.is_debug_mode()
+        logger.set_debug_mode(True)
+        try:
+            # Test normal case
+            self.merge_strategy._verify_tree_integrity(self.root)
+
+            # Test invalid parent reference
+            self.dir1_sub.parent = self.dir2
+            with self.assertRaises(ValueError):
+                self.merge_strategy._verify_tree_integrity(self.root)
+
+            # Test invalid file path
+            self.dir1_sub.parent = self.dir1  # Reset parent
+            self.dir1.file_changes[0].path = "invalid/path/file.txt"
+            with self.assertRaises(ValueError):
+                self.merge_strategy._verify_tree_integrity(self.root)
+        finally:
+            # Restore original debug mode
+            logger.set_debug_mode(original_debug)
 
 if __name__ == "__main__":
     unittest.main()

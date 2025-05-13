@@ -4,6 +4,7 @@
 import unittest
 from splitpatch.tree import DirNode, FileDiff
 from splitpatch.patch import Patch
+from splitpatch import logger
 
 class TestDirTree(unittest.TestCase):
     def setUp(self):
@@ -144,6 +145,30 @@ class TestDirTree(unittest.TestCase):
         self.assertTrue(any(p.path == "/" for p in patches))
         self.assertTrue(any(p.path == "/dir1" for p in patches))
         self.assertTrue(any(p.path == "/dir1/dir2" for p in patches))
+
+    def test_str_representation(self):
+        """Test string representation in debug and non-debug mode"""
+        # Enable debug mode
+        original_debug = logger.is_debug_mode()
+        logger.set_debug_mode(True)
+        try:
+            # Test debug mode string representation
+            debug_str = str(self.root)
+            # Verify debug mode output contains tree structure
+            self.assertIn("└──", debug_str)
+            self.assertIn("│   ", debug_str)
+            self.assertIn("dir1", debug_str)
+            self.assertIn("dir2", debug_str)
+            self.assertIn("(2 files)", debug_str)  # Root has 2 files
+
+            # Test non-debug mode string representation
+            logger.set_debug_mode(False)
+            non_debug_str = str(self.root)
+            # Verify non-debug mode output is simple
+            self.assertEqual(non_debug_str, "/ (2 files)")
+        finally:
+            # Restore original debug mode
+            logger.set_debug_mode(original_debug)
 
 if __name__ == "__main__":
     unittest.main()

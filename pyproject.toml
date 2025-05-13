@@ -28,3 +28,7 @@ build-backend = "setuptools.build_meta"
 exclude = ["tests", "tests.*", ".github"]
 
 [tool.setuptools_scm]
+
+
+[tool.coverage.run]
+omit = ["*/*profiling*"]
