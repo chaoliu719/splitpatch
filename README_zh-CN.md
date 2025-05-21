@@ -1,8 +1,8 @@
 # splitpatch
 
-[![PyPI version](https://img.shields.io/pypi/v/splitpatch.svg)](https://pypi.org/project/splitpatch/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/splitpatch.svg)](https://pypi.org/project/splitpatch/)
-[![License](https://img.shields.io/github/license/chaoliu719/splitpatch.svg)](LICENSE)
+[![PyPI version](https://img.shields.io/pypi/v/splitpatch.svg)](https://pypi.org/project/splitpatch/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/splitpatch)](https://pypi.org/project/splitpatch/)
 [![Tests](https://github.com/chaoliu719/splitpatch/actions/workflows/tests.yml/badge.svg)](https://github.com/chaoliu719/splitpatch/actions/workflows/tests.yml)
 [![codecov](https://codecov.io/gh/chaoliu719/splitpatch/branch/main/graph/badge.svg)](https://codecov.io/gh/chaoliu719/splitpatch)
 
